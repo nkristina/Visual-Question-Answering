@@ -20,6 +20,7 @@ from transformers import DPRQuestionEncoder, DPRContextEncoder, DPRConfig
 from transformers import BertModel, BertConfig
 from transformers.models.rag.retrieval_rag import CustomHFIndex, CanonicalHFIndex
 import pytorch_lightning as pl
+from datasets import load_from_disk
 
 import time
 

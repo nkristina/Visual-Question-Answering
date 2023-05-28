@@ -51,7 +51,7 @@ local caption_features = {
   "TENSORBOARD_FOLDER": "",
   "WANDB": {
     "CACHE_DIR":  wandb_cache_dir,
-    "entity": "weizhelin",
+    "entity": "kn413",
     "project": "VQA",
     "tags": ["FVQA"],
   },

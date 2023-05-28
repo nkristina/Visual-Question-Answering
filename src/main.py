@@ -114,6 +114,7 @@ def main(config):
         'callbacks': [checkpoint_callback],
         'plugins': plugins,
         'log_every_n_steps': 10,
+        'accelerator': config.args.accelerator,
         # 'accelerator': "cpu", 
         # 'strategy': "ddp",
         # 'devices': 2,

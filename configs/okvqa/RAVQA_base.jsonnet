@@ -35,8 +35,8 @@ local override = {
     "QueryEncoderModelClass": "DPRQuestionEncoder", // question encoder
     "QueryEncoderConfigClass": "DPRConfig", // question encoder
     // "QueryEncoderModelVersion": "facebook/dpr-question_encoder-single-nq-base",
-    // "QueryEncoderModelVersion": "../Experiments/Knowledge_Retriever_DPR_dim_768_inbatch_negative_caption_FullCorpus_NewRun/train/saved_model/epoch6/query_encoder",
-    "QueryEncoderModelVersion": "/additional_data/projects/RAVQA/Experiments/OKVQA_DPR_FullCorpus/train/saved_model/epoch6/query_encoder",
+    "QueryEncoderModelVersion": "../Experiments/Knowledge_Retriever_DPR_dim_768_inbatch_negative_caption_FullCorpus_NewRun/train/saved_model/epoch6/query_encoder",
+    // "QueryEncoderModelVersion": "/additional_data/projects/RAVQA/Experiments/OKVQA_DPR_FullCorpus/train/saved_model/epoch6/query_encoder",
     
     "GeneratorModelClass": "T5ForConditionalGeneration", // answer generator
     "GeneratorConfigClass": "T5Config",
