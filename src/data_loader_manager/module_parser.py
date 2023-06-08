@@ -41,7 +41,7 @@ class ModuleParser():
         """
         Default TextBasedVisionInput module parser
         object: text-based objects, with attributes and OCR'ed texts
-        caption: iamge captions
+        caption: image captions
         """
         return_dict = EasyDict(
             text_sequence="",
@@ -119,6 +119,18 @@ class ModuleParser():
         )
         return return_dict
 
+    def EmbeddingInput(self, sample: EasyDict, module: EasyDict) -> Optional[EasyDict]:
+        """
+        Default ImageInput module parser
+        pass on image in form expected by collate function.
+        """
+        return_dict = EasyDict(
+                clip_embeddings=torch.stack([torch.tensor(clip_embedding) for clip_embedding in sample.clip_embeddings]),
+            )
+
+        # print("_______Q0.3:________:")
+        # print("clip_embeddings shape after first stack:", return_dict['clip_embeddings'].shape)
+        return return_dict
 
     def parse_modules(self,
                     sample: EasyDict, 
@@ -193,6 +205,7 @@ class ModuleParser():
         Post-processing for input tokenization
         """
         assert 'text_sequence' in data_to_process.keys()
+        # print("TOKENIZOVAO INPUT TEKST")
         text_sequences = data_to_process.pop('text_sequence')
         task_prefix = ""
         encoding = self.tokenizer([task_prefix + sequence for sequence in text_sequences],
@@ -269,6 +282,29 @@ class ModuleParser():
             'labels': torch.LongTensor(labels),
         })
         return data_to_process
+
+    def PostProcessClipEmbeddings(self, data_to_process: EasyDict) -> EasyDict:
+        """
+        Apply the transformations to the images expected by the downstream model
+        """
+        assert "clip_embeddings" in data_to_process.keys()
+        clip_embeddings = data_to_process.pop("clip_embeddings")
+        post_processed_clip_embeddings = EasyDict(
+            clip_embeddings=torch.stack(clip_embeddings),
+        )
+
+        # print("_______Q0.3:________:")
+        # print("clip_embeddings shape after stack:",
+        # post_processed_clip_embeddings.clip_embeddings.shape)
+
+        # _______Q0.3:________:
+        # clip_embeddings shape after first stack: torch.Size([1, 768])
+        # _______Q0.3:________:
+        # clip_embeddings shape after stack: torch.Size([4, 1, 768])
+
+        data_to_process.update(**post_processed_clip_embeddings)
+        return data_to_process
+    
 
     def post_processing(self, 
                         processed_batch_data: EasyDict,

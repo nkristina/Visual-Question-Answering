@@ -49,6 +49,7 @@ class OKVQADataset(torch.utils.data.Dataset, ModuleParser):
         self.data = dataset_dict['data']
         self.vinvl_features = dataset_dict['vinvl_features']
         self.ocr_features = dataset_dict['ocr_features']
+        self.clip_embeddings = dataset_dict['clip_embeddings']
         self.answer_candidate_list = dataset_dict['answer_candidate_list']
         self.tokenizer = dataset_dict['tokenizer']
         self.decoder_tokenizer = dataset_dict['decoder_tokenizer']
@@ -71,6 +72,7 @@ class OKVQADataset(torch.utils.data.Dataset, ModuleParser):
 
         text_annotations = self.ocr_features[item.img_key_full]['filtered_text_annotations']
         
+        clip_embeddings = self.clip_embeddings.get(str(item.img_key), None)
         
         objects = []
         for obj in VinVL_prediction['objects']:
@@ -100,6 +102,7 @@ class OKVQADataset(torch.utils.data.Dataset, ModuleParser):
             'gold_answer': item.gold_answer,
             'answers': item.answers,
             'objects': objects,
+            'clip_embeddings': clip_embeddings,
         })
         return sample
 

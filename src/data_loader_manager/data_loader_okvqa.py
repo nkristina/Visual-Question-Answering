@@ -66,7 +66,7 @@ class DataLoaderOKVQA(DataLoaderWrapper):
         ######################
         csv.field_size_limit(100000000)
         # print(csv.field_size_limit())
-
+        print("PROCITAO SAM VinVL")
         self.data.vinvl_features = load_cached_data(self.config, 'vinvl_feature_preprocessed')
         if not self.data.vinvl_features:
             self.data.vinvl_features = EasyDict()
@@ -203,6 +203,7 @@ class DataLoaderOKVQA(DataLoaderWrapper):
         ######################
         #   Read caption data
         ######################
+        print("PROCITAO SAM Oscar Caption")
         self.data.caption_features = EasyDict()
         for caption_file_path in module_config.config.values():
             with open(caption_file_path, "r") as f:
@@ -362,6 +363,44 @@ class DataLoaderOKVQA(DataLoaderWrapper):
 
         self.data.vqa_data = self.data.okvqa_data
 
+    def LoadClipEmbeddings(self, module_config):
+        """
+        Load clip embeddings
+        {
+          "type": "LoadClipEmbeddings", "option": "default",
+          "config": {
+                "train": "..",
+                "val": "..",
+            },
+        },
+        """
+        #############################
+        #   Read Clip Embeddings
+        #############################
+        print("Ucitao sam embedinge! #")
+        self.data.clip_embeddings = load_cached_data(
+            self.config, "clip_embeddings"
+        )
+
+        if not self.data.clip_embeddings:
+            self.data.clip_embeddings = EasyDict()
+            for data_split in ["train", "val"]:
+                # Read pre-extracted features
+                clip_embeddings_file = module_config.config[data_split]
+                logger.info(f"Reading: {clip_embeddings_file}")
+                with open(clip_embeddings_file, "rb") as f:
+                    self.data.clip_embeddings.update(EasyDict(pickle.load(f)))
+
+            save_cached_data(
+                self.config, self.data.clip_embeddings, "clip_embeddings"
+            )
+
+        logger.info(
+            "[Data Statistics] CLIP embeddings {}".format(
+                len(self.data.clip_embeddings)
+            )
+        )
+
     def set_dataloader(self):
         """
         This function wraps datasets into dataloader for trainers
@@ -370,6 +409,7 @@ class DataLoaderOKVQA(DataLoaderWrapper):
             'data': self.data.vqa_data.train,
             'vinvl_features': self.data.vinvl_features,
             'ocr_features': self.data.ocr_features,
+            'clip_embeddings': self.data.clip_embeddings,
             'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
             'tokenizer': self.tokenizer,
             'decoder_tokenizer': self.decoder_tokenizer,
@@ -398,6 +438,7 @@ class DataLoaderOKVQA(DataLoaderWrapper):
             'data': self.data.vqa_data.test,
             'vinvl_features': self.data.vinvl_features,
             'ocr_features': self.data.ocr_features,
+            'clip_embeddings': self.data.clip_embeddings,
             'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
             'tokenizer': self.tokenizer,
             'decoder_tokenizer': self.decoder_tokenizer,

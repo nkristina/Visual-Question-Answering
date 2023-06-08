@@ -1,4 +1,5 @@
 import math
+from random import sample
 import time
 import os
 import sys
@@ -69,6 +70,15 @@ class RagExecutor(BaseExecutor):
                     p.requires_grad = False
                 # print(n, p.requires_grad)
         
+        if self.config.model_config.mlp.include_image_embeddings == 1:
+            if 'freeze_mapping_network' in self.config.model_config.modules:
+                for n, p in self.model.named_parameters():
+                    if 'clip_project' in n:
+                        p.requires_grad = False
+            else:
+                for n, p in self.model.named_parameters():
+                    if 'clip_project' in n:
+                        p.requires_grad = True
 
         if self.config.train.retriever_lr != self.config.train.lr:
             logger.info('using different learning rate for retriever')
@@ -145,6 +155,7 @@ class RagExecutor(BaseExecutor):
             'question_ids': sample_batched['question_ids'],
             'answers': sample_batched['answers'],
             'training': True,
+            'prefix': sample_batched['clip_embeddings'],
         })
 
         forward_results = self.model(**train_batch)
@@ -194,6 +205,7 @@ class RagExecutor(BaseExecutor):
             'labels': sample_batched['labels'].to(self.device),
             'input_text_sequences': sample_batched['input_text_sequences'],
             'question_ids': sample_batched['question_ids'],
+            'prefix': sample_batched['clip_embeddings'],
         })
 
         generation_outputs = self.model.generate(**test_batch)

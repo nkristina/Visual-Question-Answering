@@ -49,6 +49,12 @@ local override = {
       "retrieval_pseudo_loss": 0,
       "rag_loss": 0,
     },
+    "mlp":{
+      "checkpoint_path": "nan", # "../data/ok-vqa/mlp_models/model_08.ckpt",
+      "prefix_length": 10,
+      "prefix_size": 768,  # dimensions of clip embedding
+      "include_image_embeddings": 1,
+    },
     "SPECIAL_TOKENS":{  // for query encoder
       "additional_special_tokens": ["<BOV>", "<SOV>", "<EOV>", "<BOQ>", "<EOQ>", "<BOC>", "<EOC>", "<BOK>", "<EOK>"],
     },
@@ -66,10 +72,12 @@ local override = {
         {"type": "TextBasedVisionInput",  "option": "object", 
                   "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
                   "separation_tokens": {'start': '<BOV>', 'sep': '<SOV>', 'end': '<EOV>'}},
+        {"type": "EmbeddingInput",  "option": "default"},
       ],
       "postprocess_module_list": [
+        {"type": "PostProcessClipEmbeddings", "option": "default"},
         {"type": "PostProcessInputTokenization", "option": "default"},
-      ],
+      ], // TOKENIZOVAO INPUT TEKST
     },
     "decoder_input_modules": {
       "module_list":[],
@@ -90,6 +98,7 @@ local override = {
       "ocr_feature_preprocessed": 0,
       "train_data_preprocessed": 0,
       "test_data_preprocessed": 0,
+      "clip_embeddings": 0,
     },
   },
   "data_loader": {
@@ -110,6 +119,7 @@ local override = {
         "LoadOKVQAData",
         "LoadGoogleSearchPassageData",
         "LoadPretrainedDPROutputForGoogleSearchPassage",
+        "LoadClipEmbeddings",
       ],
       "module_dict":{
       },
