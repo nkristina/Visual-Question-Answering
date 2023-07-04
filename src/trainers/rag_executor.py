@@ -69,6 +69,9 @@ class RagExecutor(BaseExecutor):
                 if 'generator' in n:
                     p.requires_grad = False
                 # print(n, p.requires_grad)
+
+        if self.config.train.retriever_lr != self.config.train.lr:
+            logger.info('using different learning rate for retriever')
         
         if self.config.model_config.mlp.include_image_embeddings == 1:
             if 'freeze_mapping_network' in self.config.model_config.modules:
@@ -80,22 +83,37 @@ class RagExecutor(BaseExecutor):
                     if 'clip_project' in n:
                         p.requires_grad = True
 
-        if self.config.train.retriever_lr != self.config.train.lr:
-            logger.info('using different learning rate for retriever')
-            
-        optimization_parameters = [
-            {
-                'params': [p for n, p in self.model.named_parameters() if 'generator' in n and p.requires_grad],
-                'lr': self.config.train.lr,
-                'initial_lr': self.config.train.lr,
-            },
-            {
-                'params': [p for n, p in self.model.named_parameters() if 'generator' not in n and p.requires_grad],
-                'lr': self.config.train.retriever_lr,
-                'initial_lr': self.config.train.retriever_lr,
-            },
-        ]
-            
+            optimization_parameters = [
+                {
+                    'params': [p for n, p in self.model.named_parameters() if 'generator' in n and p.requires_grad],
+                    'lr': self.config.train.lr,
+                    'initial_lr': self.config.train.lr,
+                },
+                {
+                    'params': [p for n, p in self.model.named_parameters() if 'generator' not in n and 'clip_project' not in n and p.requires_grad],
+                    'lr': self.config.train.retriever_lr,
+                    'initial_lr': self.config.train.retriever_lr,
+                },
+                {
+                    'params': [p for n, p in self.model.named_parameters() if 'clip_project' in n and p.requires_grad],
+                    'lr': self.config.model_config.mlp.mlp_lr,
+                    'initial_lr': self.config.model_config.mlp.mlp_lr,
+                },
+            ]
+        else:    
+            optimization_parameters = [
+                {
+                    'params': [p for n, p in self.model.named_parameters() if 'generator' in n and p.requires_grad],
+                    'lr': self.config.train.lr,
+                    'initial_lr': self.config.train.lr,
+                },
+                {
+                    'params': [p for n, p in self.model.named_parameters() if 'generator' not in n and p.requires_grad],
+                    'lr': self.config.train.retriever_lr,
+                    'initial_lr': self.config.train.retriever_lr,
+                },
+            ]
+                
         for group in optimization_parameters:
             logger.info('#params: {}   lr: {}'.format(len(group['params']), group['lr']))
         

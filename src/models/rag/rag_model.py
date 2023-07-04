@@ -22,6 +22,8 @@ from transformers.models.rag.retrieval_rag import CustomHFIndex, CanonicalHFInde
 import pytorch_lightning as pl
 from datasets import load_from_disk
 
+from models.rag.vct0_model import VCT0Model, VCT0Prefix
+
 import time
 
 class MLP(nn.Module):
@@ -85,6 +87,7 @@ class RagModel(pl.LightningModule):
         if config.model_config.mlp.include_image_embeddings == 1:
             self.use_img_embd = True
             self.prefix_length = self.config.model_config.mlp.prefix_length
+
             print("\n\n Using MLP \n\n")
             self.clip_project = MLP(
                 (
@@ -103,7 +106,10 @@ class RagModel(pl.LightningModule):
                     print("Loading checkpoint from '{}'".format(checkpoint_path))
                     checkpoint = torch.load(checkpoint_path)
                     print(checkpoint.keys())
-                    self.clip_project.load_state_dict(checkpoint["state_dict"])
+                    self.vct0 = VCT0Prefix(prefix_length = self.prefix_length, model_version = self.config.model_config.GeneratorModelVersion)
+                    self.vct0.load_state_dict(checkpoint["state_dict"], strict=False)
+                    self.clip_project.load_state_dict(self.vct0.clip_project.state_dict())
+                    print("Loaded?")
 
     
     def init_retrieval(self):
