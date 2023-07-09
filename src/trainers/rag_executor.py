@@ -31,6 +31,7 @@ from pytorch_lightning import Trainer, seed_everything
 from .metrics_processors import MetricsProcessor
 from .base_executor import BaseExecutor
 from models.rag.rag_model import RagModel
+from models.rag.LoRA_rag_model import RagModelLora
 from utils.dirs import *
 
 class RagExecutor(BaseExecutor):
@@ -58,8 +59,9 @@ class RagExecutor(BaseExecutor):
             # Freeze retriever
             print('freeze retriever!')
             for n, p in self.model.named_parameters():
-                if 'generator' not in n:
+                if 'question_encoder' in n:
                     p.requires_grad = False
+                    print("done ", n)
                 # print(n, p.requires_grad)
         
         if 'freeze_generator' in self.config.model_config.modules:

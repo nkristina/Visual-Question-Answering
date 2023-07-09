@@ -67,7 +67,7 @@ local override = {
       "additional_special_tokens": ["<BOV>", "<SOV>", "<EOV>", "<BOQ>", "<EOQ>", "<BOC>", "<EOC>", "<BOK>", "<EOK>"],
     },
     "input_modules": {
-      "module_list":[
+      "module_list":[ // zakomentarisi sve textBasedVision za no_txt
         {"type": "QuestionInput",  "option": "default", 
                   "separation_tokens": {'start': '<BOQ>', 'end': '<EOQ>'}},
         // {"type": "TextBasedVisionInput",  "option": "caption",
@@ -75,6 +75,11 @@ local override = {
         // {"type": "TextBasedVisionInput",  "option": "object", 
         //           "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
         //           "separation_tokens": {'start': '<BOV>', 'sep': '<SOV>', 'end': '<EOV>'}},
+        {"type": "TextBasedVisionInput",  "option": "caption",
+                  "separation_tokens": {'start': 'Caption:', 'end': '.'}},
+        {"type": "TextBasedVisionInput",  "option": "object", 
+                  "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
+                  "separation_tokens": {'start': 'Objects:', 'sep': ',', 'end': '.'}},
         {"type": "EmbeddingInput",  "option": "default"},
       ],
       "postprocess_module_list": [

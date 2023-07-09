@@ -20,8 +20,8 @@ from transformers import DPRQuestionEncoder, DPRContextEncoder, DPRConfig
 from transformers import BertModel, BertConfig
 from transformers.models.rag.retrieval_rag import CustomHFIndex, CanonicalHFIndex
 import pytorch_lightning as pl
+from peft import LoraConfig, get_peft_model, TaskType, PeftModelForSeq2SeqLM
 from datasets import load_from_disk
-
 from models.rag.vct0_model import VCT0Prefix
 
 import time
@@ -39,9 +39,9 @@ class MLP(nn.Module):
                 layers.append(act())
         self.model = nn.Sequential(*layers)
 
-class RagModel(pl.LightningModule):
+class RagModelLora(pl.LightningModule):
     '''
-    Class for RAG, re-implementation
+    Class for RAG, using LoRA for parameter optimisation
     '''
     def __init__(self, config: EasyDict, data_loader) -> None:
         super().__init__()
@@ -66,7 +66,11 @@ class RagModel(pl.LightningModule):
         generator_model_config = GeneratorConfigClass.from_pretrained(self.config.model_config.GeneratorModelVersion)
         self.generator = GeneratorModelClass.from_pretrained(self.config.model_config.GeneratorModelVersion,
                                                     config=generator_model_config)
-        # self.generator = GeneratorModelClass.from_pretrained("google/flan-t5-large", config=generator_model_config)
+
+        peft_config = LoraConfig(task_type=TaskType.SEQ_2_SEQ_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1)
+        self.generator = PeftModelForSeq2SeqLM(self.generator, peft_config)
+        self.generator.print_trainable_parameters()
+
         self.question_encoder.resize_token_embeddings(len(self.retriever_tokenizer))
         self.generator.resize_token_embeddings(len(self.generator_tokenizer))
         
