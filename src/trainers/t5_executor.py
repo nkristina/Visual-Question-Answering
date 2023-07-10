@@ -32,6 +32,9 @@ from .base_executor import BaseExecutor
 from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config
 from utils.dirs import *
 
+from models.rag.rag_model_noDPR import RagModelNoDPR
+from models.rag.LoRA_rag_model_noDPR import RagModelNoDPRLora
+
 class T5Executor(BaseExecutor):
     def __init__(self, config, data_loader):
         super().__init__(config, data_loader)
@@ -44,17 +47,10 @@ class T5Executor(BaseExecutor):
         
         ModelClass = globals()[self.config.model_config.ModelClass]
 
-        if self.config.model_config.pretrained == True:
-            ConfigClass = globals()[self.config.model_config.ConfigClass]
-            model_config = ConfigClass.from_pretrained(self.config.model_config.ModelVersion)
-            self.model = ModelClass.from_pretrained(self.config.model_config.ModelVersion,
-                                                    config=model_config)
-        else:
-            ConfigClass = globals()[self.config.model_config.ConfigClass]
-            model_config = ConfigClass.from_pretrained(self.config.model_config.ModelVersion)
-            self.model = ModelClass(model_config)
+        ModelClass = globals()[self.config.model_config.ModelClass]
+        self.model = ModelClass(config, data_loader)
         
-        self.model.resize_token_embeddings(len(self.tokenizer))
+        # self.model.resize_token_embeddings(len(self.tokenizer))
 
         
 
@@ -63,6 +59,15 @@ class T5Executor(BaseExecutor):
         """
         Return optimizers and schedulers
         """
+        if self.config.model_config.mlp.include_image_embeddings == 1:
+            if 'freeze_mapping_network' in self.config.model_config.modules:
+                for n, p in self.model.named_parameters():
+                    if 'clip_project' in n:
+                        p.requires_grad = False
+            else:
+                for n, p in self.model.named_parameters():
+                    if 'clip_project' in n:
+                        p.requires_grad = True
 
         optimization_parameters = [
             {
@@ -127,6 +132,8 @@ class T5Executor(BaseExecutor):
             'input_ids': sample_batched['input_ids'].to(self.device),
             'attention_mask': sample_batched['attention_mask'].to(self.device),
             'labels': sample_batched['labels'].to(self.device),
+            'prefix': sample_batched['clip_embeddings'].to(self.device),
+
         })
 
         if 'image_features' in sample_batched.keys():
@@ -179,6 +186,7 @@ class T5Executor(BaseExecutor):
             'input_ids': sample_batched['input_ids'].to(self.device),
             'attention_mask': sample_batched['attention_mask'].to(self.device),
             "max_length": self.config.data_loader.additional.max_target_length,
+            'prefix': sample_batched['clip_embeddings'].to(self.device),
         })
         
         outputs = self.model.generate(**test_batch)
