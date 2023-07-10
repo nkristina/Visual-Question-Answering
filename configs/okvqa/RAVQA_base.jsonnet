@@ -55,7 +55,7 @@ local override = {
       "checkpoint_path": "", # "../data/ok-vqa/mlp_models/model_08.ckpt",
       "prefix_length": 10,
       "prefix_size": 768,  # dimensions of clip embedding
-      "include_image_embeddings": 1,
+      "include_image_embeddings": 0,
       "mlp_lr": mlp_lr,
     },
     "SPECIAL_TOKENS":{  // for query encoder
@@ -75,11 +75,11 @@ local override = {
         // {"type": "TextBasedVisionInput",  "option": "object", 
         //           "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
         //           "separation_tokens": {'start': '<BOV>', 'sep': '<SOV>', 'end': '<EOV>'}},
-        {"type": "TextBasedVisionInput",  "option": "caption",
-                  "separation_tokens": {'start': 'Caption:', 'end': '.'}},
-        {"type": "TextBasedVisionInput",  "option": "object", 
-                  "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
-                  "separation_tokens": {'start': 'Objects:', 'sep': ',', 'end': '.'}},
+        // {"type": "TextBasedVisionInput",  "option": "caption",
+        //           "separation_tokens": {'start': 'Caption:', 'end': '.'}},
+        // {"type": "TextBasedVisionInput",  "option": "object", 
+        //           "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
+        //           "separation_tokens": {'start': 'Objects:', 'sep': ',', 'end': '.'}},
         {"type": "EmbeddingInput",  "option": "default"},
       ],
       "postprocess_module_list": [

@@ -137,6 +137,10 @@ local clip_embeddings = {
             "image_data_path": img_data,
           },
         },
+        "LoadClipEmbeddings": {
+          "type": "LoadClipEmbeddings", "option": "default",
+          "config": clip_embeddings,
+        },
         "LoadGoogleSearchPassageData": {
           "type": "LoadGoogleSearchPassageData", "option": "default",
           "config": {
@@ -155,10 +159,6 @@ local clip_embeddings = {
           "config": {
             "annotations_path": dpr_training_annotations,
           },
-        },
-          "LoadClipEmbeddings": {
-          "type": "LoadClipEmbeddings", "option": "default",
-          "config": clip_embeddings,
         },
       },
     },

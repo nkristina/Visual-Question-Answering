@@ -21,7 +21,7 @@ from transformers import BertModel, BertConfig
 from transformers.models.rag.retrieval_rag import CustomHFIndex, CanonicalHFIndex
 import pytorch_lightning as pl
 from peft import LoraConfig, get_peft_model, TaskType, PeftModelForSeq2SeqLM
-from datasets import load_from_disk
+# from datasets import load_from_disk
 from models.rag.vct0_model import VCT0Prefix
 
 import time

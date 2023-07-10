@@ -21,7 +21,7 @@ from transformers.modeling_outputs import (
     Seq2SeqModelOutput,
 )
 from transformers.file_utils import ModelOutput
-from transformers.generation_utils import (
+from transformers.generation.utils import (
     GreedySearchOutput,
     SampleOutput,
     BeamSearchOutput,

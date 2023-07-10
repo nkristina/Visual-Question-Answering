@@ -13,6 +13,7 @@ local retriever_lr = 1e-5;
 local gradient_accumulation_steps = 4;
 local gradient_clipping = 0;
 local warmup_steps = 0;
+local mlp_lr = 5e-4;
 
 local seed=2021;
 
@@ -25,9 +26,10 @@ local override = {
   "seed": seed,
   "model_config": {
     "base_model": "T5",
-    "ModelClass": "T5ForConditionalGeneration",
+    "ModelClass": "RagModelNoDPR",
     "TokenizerClass": "T5Tokenizer",
     "TokenizerModelVersion": "t5-large",
+    "GeneratorModelClass": "T5ForConditionalGeneration",
     "ConfigClass": "T5Config",
     "ModelVersion": "t5-large",
     "pretrained": 1,
@@ -38,17 +40,25 @@ local override = {
       "pad_token": "<PAD>",
       "additional_special_tokens": ["<BOV>", "<SOV>", "<EOV>", "<BOQ>", "<EOQ>", "<BOC>", "<EOC>"],
     },
+    "mlp": {
+      "checkpoint_path": "nan", # "../data/ok-vqa/mlp_models/model_08.ckpt",
+      "prefix_length": 10,
+      "prefix_size": 768,  # dimensions of clip embedding
+      "include_image_embeddings": 1,
+    },
     "input_modules": {
       "module_list":[
         {"type": "QuestionInput",  "option": "default", 
                   "separation_tokens": {'start': '<BOQ>', 'end': '<EOQ>'}},
-        {"type": "TextBasedVisionInput",  "option": "caption",
-                  "separation_tokens": {'start': '<BOC>', 'end': '<EOC>'}},
-        {"type": "TextBasedVisionInput",  "option": "object", 
-                  "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
-                  "separation_tokens": {'start': '<BOV>', 'sep': '<SOV>', 'end': '<EOV>'}},        
+        // {"type": "TextBasedVisionInput",  "option": "caption",
+        //           "separation_tokens": {'start': '<BOC>', 'end': '<EOC>'}},
+        // {"type": "TextBasedVisionInput",  "option": "object", 
+        //           "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
+        //           "separation_tokens": {'start': '<BOV>', 'sep': '<SOV>', 'end': '<EOV>'}},
+        {"type": "EmbeddingInput",  "option": "default"},
       ],
       "postprocess_module_list": [
+        {"type": "PostProcessClipEmbeddings", "option": "default"},
         {"type": "PostProcessInputTokenization", "option": "default"},
       ],
     },
@@ -71,6 +81,7 @@ local override = {
       "ocr_feature_preprocessed": 0,
       "train_data_preprocessed": 0,
       "test_data_preprocessed": 0,
+      "clip_embeddings": 0,
     },
   },
   "data_loader": {
@@ -88,6 +99,7 @@ local override = {
         "LoadGoogleOCRFeatures",
         "LoadOscarCaptionFeatures",
         "LoadOKVQAData",
+        "LoadClipEmbeddings",
       ],
       "module_dict":{
       },
