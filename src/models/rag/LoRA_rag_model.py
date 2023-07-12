@@ -67,7 +67,7 @@ class RagModelLora(pl.LightningModule):
         self.generator = GeneratorModelClass.from_pretrained(self.config.model_config.GeneratorModelVersion,
                                                     config=generator_model_config)
 
-        peft_config = LoraConfig(task_type=TaskType.SEQ_2_SEQ_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1)
+        peft_config = LoraConfig(task_type=TaskType.SEQ_2_SEQ_LM, inference_mode=False, r=16, lora_alpha=32, lora_dropout=0.1)
         self.generator = PeftModelForSeq2SeqLM(self.generator, peft_config)
         self.generator.print_trainable_parameters()
 
