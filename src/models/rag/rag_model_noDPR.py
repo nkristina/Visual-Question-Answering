@@ -5,6 +5,7 @@ import math
 import os
 from turtle import forward
 import warnings
+from pathlib import Path
 
 import torch
 from torch import nn
@@ -49,7 +50,7 @@ class RagModelNoDPR(pl.LightningModule):
         self.config = config
         self.data_loader = data_loader
         # self.retriever_tokenizer = data_loader.tokenizer
-        self.generator_tokenizer = data_loader.tokenizer
+        self.tokenizer = data_loader.tokenizer
 
         
         # Initialising question encoder - ostaje isto !
@@ -72,7 +73,7 @@ class RagModelNoDPR(pl.LightningModule):
         generator_model_config = GeneratorConfigClass.from_pretrained(self.config.model_config.ModelVersion)
         self.generator = GeneratorModelClass.from_pretrained(self.config.model_config.ModelVersion,config=generator_model_config)
 
-        self.generator.resize_token_embeddings(len(self.generator_tokenizer))
+        self.generator.resize_token_embeddings(len(self.tokenizer))
         
         # self.loss_fct = CrossEntropyLoss(ignore_index=-100)
 
@@ -99,12 +100,26 @@ class RagModelNoDPR(pl.LightningModule):
                     print("No checkpoint exists from '{}'. Skipping...".format(checkpoint_path))
                 else:
                     print("Loading checkpoint from '{}'".format(checkpoint_path))
-                    checkpoint = torch.load(checkpoint_path)
-                    print(checkpoint.keys())
-                    self.vct0 = VCT0Prefix(prefix_length = self.prefix_length, model_version = self.config.model_config.ModelVersion)
-                    self.vct0.load_state_dict(checkpoint["state_dict"], strict=False)
-                    self.clip_project.load_state_dict(self.vct0.clip_project.state_dict())
-                    print("Loaded?")
+                    print('Weights before loading')
+                    for n, p in self.clip_project.named_parameters():
+                        print(n,p)
+                    # checkpoint = torch.load(checkpoint_path)
+                    # print(checkpoint.keys())
+                    # self.vct0 = VCT0Prefix(prefix_length = self.prefix_length, model_version = self.config.model_config.ModelVersion)
+                    # self.vct0.load_state_dict(checkpoint["state_dict"], strict=False)
+                    # self.clip_project.load_state_dict(self.vct0.clip_project.state_dict())
+                    # print("Loaded?")
+                    checkpoint_path = Path(config.model_config.mlp.checkpoint_path)
+                    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+                    with torch.no_grad():
+                        self.clip_project.model[0].weight.copy_(checkpoint['state_dict']["model.clip_project.model.0.weight"])
+                        self.clip_project.model[0].bias.copy_(checkpoint['state_dict']["model.clip_project.model.0.bias"])
+                        self.clip_project.model[2].weight.copy_(checkpoint['state_dict']["model.clip_project.model.2.weight"])
+                        self.clip_project.model[2].bias.copy_(checkpoint['state_dict']["model.clip_project.model.2.bias"])
+                    print('Weights after loading')
+                    for n, p in self.clip_project.named_parameters():
+                        print(n,p)
+                    print('Loadeed??')
 
     def prepare_inputs_for_generator(self, 
                 input_text_sequences, retrieved_docs, labels, n_docs=None):

@@ -49,12 +49,12 @@ local override = {
     "input_modules": {
       "module_list":[
         {"type": "QuestionInput",  "option": "default", 
-                  "separation_tokens": {'start': '<BOQ>', 'end': '<EOQ>'}},
-        // {"type": "TextBasedVisionInput",  "option": "caption",
-        //           "separation_tokens": {'start': '<BOC>', 'end': '<EOC>'}},
-        // {"type": "TextBasedVisionInput",  "option": "object", 
-        //           "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
-        //           "separation_tokens": {'start': '<BOV>', 'sep': '<SOV>', 'end': '<EOV>'}},
+                  "separation_tokens": {'start': 'Use the provided image to answer the question: ', 'end': ''}},
+        {"type": "TextBasedVisionInput",  "option": "caption",
+                  "separation_tokens": {'start': 'Image caption is: ', 'end': ''}},
+        {"type": "TextBasedVisionInput",  "option": "object", 
+                  "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
+                  "separation_tokens": {'start': 'In the image there are following objects with their description:', 'sep': ',', 'end': ''}},
         {"type": "EmbeddingInput",  "option": "default"},
       ],
       "postprocess_module_list": [

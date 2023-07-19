@@ -46,34 +46,41 @@ class T5Executor(BaseExecutor):
         self.decoder_tokenizer = data_loader.decoder_tokenizer
         
         ModelClass = globals()[self.config.model_config.ModelClass]
-
-        ModelClass = globals()[self.config.model_config.ModelClass]
         self.model = ModelClass(config, data_loader)
         
         # self.model.resize_token_embeddings(len(self.tokenizer))
-
-        
-
     
     def configure_optimizers(self):
         """
         Return optimizers and schedulers
         """
         if self.config.model_config.mlp.include_image_embeddings == 1:
-            if 'freeze_mapping_network' in self.config.model_config.modules:
-                for n, p in self.model.named_parameters():
-                    if 'clip_project' in n:
-                        p.requires_grad = False
-            else:
-                for n, p in self.model.named_parameters():
-                    if 'clip_project' in n:
-                        p.requires_grad = True
+            for n, p in self.model.named_parameters():
+                if 'clip_project' in n:
+                    p.requires_grad = True
+
+        for n, p in self.model.named_parameters():
+            p.requires_grad = True
 
         optimization_parameters = [
             {
                 'params': [p for n, p in self.model.named_parameters()],
                 'lr': self.config.train.lr,
                 'initial_lr': self.config.train.lr,
+            },
+        ]
+
+        if self.config.model_config.mlp.include_image_embeddings == 1:
+            optimization_parameters = [
+            {
+                'params': [p for n, p in self.model.named_parameters() if 'clip_project' not in n and p.requires_grad],
+                'lr': self.config.train.lr,
+                'initial_lr': self.config.train.lr,
+            },
+            {
+                'params': [p for n, p in self.model.named_parameters() if 'clip_project' in n],
+                'lr': self.config.train.mlp_lr,
+                'initial_lr': self.config.train.mlp_lr,
             },
         ]
         
