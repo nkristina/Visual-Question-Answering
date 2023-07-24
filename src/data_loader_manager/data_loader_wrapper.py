@@ -18,7 +18,7 @@ from transformers import BertTokenizer
 from transformers import GPT2Tokenizer
 from transformers import ViTFeatureExtractor
 from transformers import DPRQuestionEncoderTokenizer, DPRContextEncoderTokenizer
-
+from transformers import InstructBlipProcessor
 
 class DataLoaderWrapper():
     '''
@@ -37,7 +37,10 @@ class DataLoaderWrapper():
         self.tokenizer.add_special_tokens(self.SPECIAL_TOKENS)
         
         # Load second tokenizer if specified
-        if self.config.model_config.get('DecoderTokenizerClass', None) is not None:
+        if self.config.model_config.DecoderTokenizerClass == "InstructBlipProcessor":
+            DecoderTokenizerClass = globals()[self.config.model_config.DecoderTokenizerClass]
+            self.decoder_tokenizer = DecoderTokenizerClass.from_pretrained(self.config.model_config.DecoderTokenizerModelVersion)
+        elif self.config.model_config.get('DecoderTokenizerClass', None) is not None:
             DecoderTokenizerClass = globals()[self.config.model_config.DecoderTokenizerClass]
             self.decoder_tokenizer = DecoderTokenizerClass.from_pretrained(self.config.model_config.DecoderTokenizerModelVersion)
             self.DECODER_SPECIAL_TOKENS = self.config.model_config.DECODER_SPECIAL_TOKENS

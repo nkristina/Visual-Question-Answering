@@ -43,9 +43,10 @@ from utils.vqa_tools import VQA
 from utils.vqaEval import VQAEval
 
 from data_loader_manager.data_loader_okvqa import DataLoaderOKVQA
+from data_loader_manager.data_loader_okvqa_ins import DataLoaderOKVQAIns
 from data_loader_manager.datasets import *
 
-class DataLoaderOKVQAWithKnowledge(DataLoaderOKVQA):
+class DataLoaderOKVQAWithKnowledge(DataLoaderOKVQAIns):
     '''
     Data loader for our OK-VQA dataset
     Knowledge passages are incorporated
@@ -360,19 +361,33 @@ class DataLoaderOKVQAWithKnowledge(DataLoaderOKVQA):
         """
         This function wraps datasets into dataloader for trainers
         """
-        train_dataset_dict = {
-            'data': self.data.vqa_data.train if 'vqa_data_with_dpr_output' not in self.data.keys() \
-                    else self.data.vqa_data_with_dpr_output.train,
-            'passages': self.data.passages,
-            'vinvl_features': self.data.vinvl_features,
-            'ocr_features': self.data.ocr_features,
-            'clip_embeddings': self.data.clip_embeddings,
-            'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
-            'tokenizer': self.tokenizer,
-            'decoder_tokenizer': self.decoder_tokenizer,
-            'feature_extractor': self.feature_extractor,
-            'mode': 'train',
-        }
+        if 'clip_embeddings' in self.data.keys():
+            train_dataset_dict = {
+                'data': self.data.vqa_data.train if 'vqa_data_with_dpr_output' not in self.data.keys() \
+                        else self.data.vqa_data_with_dpr_output.train,
+                'passages': self.data.passages,
+                'vinvl_features': self.data.vinvl_features,
+                'ocr_features': self.data.ocr_features,
+                'clip_embeddings': self.data.clip_embeddings,
+                'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
+                'tokenizer': self.tokenizer,
+                'decoder_tokenizer': self.decoder_tokenizer,
+                'feature_extractor': self.feature_extractor,
+                'mode': 'train',
+            }
+        else:
+            train_dataset_dict = {
+                'data': self.data.vqa_data.train if 'vqa_data_with_dpr_output' not in self.data.keys() \
+                        else self.data.vqa_data_with_dpr_output.train,
+                'passages': self.data.passages,
+                'vinvl_features': self.data.vinvl_features,
+                'ocr_features': self.data.ocr_features,
+                'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
+                'tokenizer': self.tokenizer,
+                'decoder_tokenizer': self.decoder_tokenizer,
+                'feature_extractor': self.feature_extractor,
+                'mode': 'train',
+            }
         self.train_dataset = globals()[self.config.data_loader.dataset_type](self.config, train_dataset_dict)
         # for i in self.train_dataset:
         #     pprint(i)
@@ -388,19 +403,33 @@ class DataLoaderOKVQAWithKnowledge(DataLoaderOKVQA):
         #     print(i)
         #     input()
 
-        test_dataset_dict = {
-            'data': self.data.vqa_data.test if 'vqa_data_with_dpr_output' not in self.data.keys() \
-                    else self.data.vqa_data_with_dpr_output.test,
-            'passages': self.data.passages,
-            'vinvl_features': self.data.vinvl_features,
-            'ocr_features': self.data.ocr_features,
-            'clip_embeddings': self.data.clip_embeddings,
-            'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
-            'tokenizer': self.tokenizer,
-            'decoder_tokenizer': self.decoder_tokenizer,
-            'feature_extractor': self.feature_extractor,
-            'mode': 'test',
-        }
+        if "clip_embeddings" in self.data.keys():
+            test_dataset_dict = {
+                'data': self.data.vqa_data.test if 'vqa_data_with_dpr_output' not in self.data.keys() \
+                        else self.data.vqa_data_with_dpr_output.test,
+                'passages': self.data.passages,
+                'vinvl_features': self.data.vinvl_features,
+                'ocr_features': self.data.ocr_features,
+                'clip_embeddings': self.data.clip_embeddings,
+                'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
+                'tokenizer': self.tokenizer,
+                'decoder_tokenizer': self.decoder_tokenizer,
+                'feature_extractor': self.feature_extractor,
+                'mode': 'test',
+            }
+        else:
+                        test_dataset_dict = {
+                'data': self.data.vqa_data.test if 'vqa_data_with_dpr_output' not in self.data.keys() \
+                        else self.data.vqa_data_with_dpr_output.test,
+                'passages': self.data.passages,
+                'vinvl_features': self.data.vinvl_features,
+                'ocr_features': self.data.ocr_features,
+                'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
+                'tokenizer': self.tokenizer,
+                'decoder_tokenizer': self.decoder_tokenizer,
+                'feature_extractor': self.feature_extractor,
+                'mode': 'test',
+            }
         self.test_dataset = globals()[self.config.data_loader.dataset_type](self.config, test_dataset_dict)
 
         test_sampler = SequentialSampler(self.test_dataset)

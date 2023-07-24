@@ -269,6 +269,37 @@ class ModuleParser():
         })
         return data_to_process
     
+    def PostProcessOutputTokenizationInstructBLIP(self, data_to_process: EasyDict) -> EasyDict:
+        """
+        Post-processing for output tokenization to use with instructblipprocessor
+        """
+        assert 'text_sequence' in data_to_process.keys()
+        text_sequences = data_to_process.pop('text_sequence')
+        target_encoding = self.decoder_tokenizer(text=text_sequences,
+                                    padding='longest',
+                                    max_length=self.config.data_loader.additional.max_target_length,
+                                    truncation=True)
+        labels = target_encoding.input_ids
+        output_sequence_ids = target_encoding.input_ids # For teacher force training
+        output_sequence_ids = torch.LongTensor(output_sequence_ids)
+        output_sequence_attention_mask = torch.LongTensor(target_encoding.attention_mask) # For teacher force training
+        
+        # replace padding token id's of the labels by -100
+        labels = [
+            [(label if label != self.decoder_tokenizer.tokenizer.pad_token_id else -100) for label in labels_example] for labels_example in labels
+        ]
+
+        labels = torch.LongTensor(labels)
+        assert labels.shape == output_sequence_ids.shape
+
+        data_to_process.update({
+            'labels': labels,
+            'output_sequence_ids': output_sequence_ids,
+            'output_sequence_attention_mask': output_sequence_attention_mask,
+            'output_text_sequences': text_sequences,
+        })
+        return data_to_process
+
     def PostProcessConcatenateLabels(self, data_to_process: EasyDict) -> EasyDict:
         """
         Post-processing for concatenating labels
