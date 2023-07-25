@@ -65,8 +65,8 @@ local override = {
       "include_image_embeddings": 0,
     },
     "SPECIAL_TOKENS":{  // for query encoder
-      "bos_token": "<PAD>",
-      "pad_token": "<PAD>",
+      // "bos_token": "<PAD>",
+      // "pad_token": "<PAD>",
       "additional_special_tokens": [],
     },
     "DECODER_SPECIAL_TOKENS":{ // for answer generator
