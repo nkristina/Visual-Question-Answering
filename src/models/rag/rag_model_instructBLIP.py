@@ -347,6 +347,37 @@ class RagModelInstructBLIP(pl.LightningModule):
 
         return embedding_out, attention_mask_out
 
+    def replace_tags(self, input_data):
+        if isinstance(input_data, str):
+            # If the input is a single string, perform all replacements directly.
+            input_data = (
+                input_data.replace("<BOQ>", "Question:")
+                        .replace("<EOQ>", "")
+                        .replace("<BOV>", "Objects:")
+                        .replace(" <SOV>", ",")
+                        .replace("<EOV>", "")
+                        .replace("<BOC>", "Caption:")
+                        .replace("<EOC>", "")
+                        .replace("  ", " ")
+            )
+        elif isinstance(input_data, list):
+            # If the input is a list of strings, use list comprehension to perform replacements.
+            input_data = [
+                string.replace("<BOQ>", "Question:")
+                        .replace("<EOQ>", "")
+                        .replace("<BOV>", "Objects:")
+                        .replace(" <SOV>", ",")
+                        .replace("<EOV>", "")
+                        .replace("<BOC>", "Caption:")
+                        .replace("<EOC>", "")
+                        .replace("  ", " ")
+                for string in input_data
+            ]
+        else:
+            raise ValueError("Input must be a string or a list of strings.")
+
+        return input_data
+
     def forward(self, questions, pixel_values, input_ids: torch.Tensor,
                       attention_mask: torch.Tensor,
                       labels: torch.Tensor,
@@ -385,7 +416,7 @@ class RagModelInstructBLIP(pl.LightningModule):
         else:
             labels = labels.repeat_interleave(n_docs, 0)
 
-
+        input_text_sequences = self.replace_tags(input_text_sequences)
         # prepare inputs for generator
         generator_inputs = self.prepare_inputs_for_generator(input_text_sequences=input_text_sequences,
                                             retrieved_docs=retrieved_docs,
@@ -472,6 +503,7 @@ class RagModelInstructBLIP(pl.LightningModule):
         # populate labels
         labels = labels.repeat_interleave(n_docs, 0)
 
+        input_text_sequences = self.replace_tags(input_text_sequences)
         # prepare inputs for generator
         generator_inputs = self.prepare_inputs_for_generator(input_text_sequences=input_text_sequences,
                                             retrieved_docs=retrieved_docs,
@@ -726,7 +758,8 @@ class RagModelInstructBLIP(pl.LightningModule):
             # fill -100 to be 0, avoid indexing error using gather
             new_target.masked_fill_(pad_mask, 0)
 
-        ll = seq_logprobs.gather(dim=-1, index=new_target)
+        # print("target: ", new_target)
+        ll = seq_logprobs.gather(dim=-1, index=new_target.type(torch.int64))
         if pad_mask.any():
             ll.masked_fill_(pad_mask, 0.0)
         
@@ -784,8 +817,11 @@ class RagModelInstructBLIP(pl.LightningModule):
                     merged_labels = prediction_labels.float()
                     ignore_mask = torch.zeros_like(merged_labels).bool().to(merged_labels.device)
 
-
+                # print("doc_scores : ", doc_scores)
                 doc_scores_softmaxed = F.softmax(doc_scores, dim=-1)
+                # print("doc_scores softmaxed: ", doc_scores_softmaxed, "type: ", doc_scores_softmaxed.dtype)
+                # merged_labels = merged_labels.to(torch.float16)
+                # print("merged_labels: ", merged_labels, "tyep: ", merged_labels.dtype)
 
                 dist_loss = F.binary_cross_entropy(doc_scores_softmaxed, merged_labels, reduction='none')
                 dist_loss.masked_fill_(ignore_mask, 0.0)

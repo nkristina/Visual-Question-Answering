@@ -106,16 +106,35 @@ class PrefixModelBLIP2(pl.LightningModule):
             batch_images_preprocessed = torch.stack(pixel_values).to(device)
 
             question = []
+            caption_prompt = []
             for q in questions:
                 question.append('Based on the image, respond to this question with a short answer: '+q+'. Answer:')
+                caption_prompt.append("Caption this image.")
 
-            inputs = self.processor(
-                images=batch_images_preprocessed, 
-                text=question, 
-                padding='longest',
-                max_length=self.config.data_loader.additional.max_decoder_source_length,
-                truncation=True,
-                return_tensors="pt").to(device, torch.float32)
+            if self.config.no_instruction_vision:
+                inputs = self.processor( 
+                    text=question, 
+                    padding='longest',
+                    max_length=self.config.data_loader.additional.max_decoder_source_length,
+                    truncation=True,
+                    return_tensors="pt").to(device, torch.float32)
+
+                qformer_inputs = self.processor(
+                    images=batch_images_preprocessed, 
+                    text=caption_prompt, 
+                    padding='longest',
+                    max_length=self.config.data_loader.additional.max_decoder_source_length,
+                    truncation=True,
+                    return_tensors="pt").to(device, torch.float32)
+            
+            else:
+                inputs = self.processor(
+                    images=batch_images_preprocessed, 
+                    text=question, 
+                    padding='longest',
+                    max_length=self.config.data_loader.additional.max_decoder_source_length,
+                    truncation=True,
+                    return_tensors="pt").to(device, torch.float32)
 
             labels = self.processor(
                 text=gold_answer, 
@@ -123,10 +142,21 @@ class PrefixModelBLIP2(pl.LightningModule):
                 max_length=self.config.data_loader.additional.max_decoder_source_length,
                 truncation=True,
                 return_tensors="pt")
-
-            generator_outputs = self.generator(
-                **inputs, #input_ids, attention_mask, qformer_input_ids, qformer_attention_mask, pixel_values
-                labels=labels.input_ids.to(device))
+            
+            if self.config.no_instruction_vision:
+                # print("q-inputid", qformer_inputs.qformer_input_ids.shape)
+                # print("q-atn", qformer_inputs.qformer_attention_mask.shape)
+                generator_outputs = self.generator(
+                    pixel_values=qformer_inputs.pixel_values,
+                    qformer_input_ids=qformer_inputs.qformer_input_ids,
+                    qformer_attention_mask=qformer_inputs.qformer_attention_mask,
+                    input_ids=inputs.input_ids,
+                    attention_mask=inputs.attention_mask,
+                    labels=labels.input_ids.to(device))
+            else:
+                generator_outputs = self.generator(
+                    **inputs, #input_ids, attention_mask, qformer_input_ids, qformer_attention_mask, pixel_values
+                    labels=labels.input_ids.to(device))
 
             return generator_outputs.loss
 
@@ -164,18 +194,47 @@ class PrefixModelBLIP2(pl.LightningModule):
             '''
             batch_images_preprocessed = torch.stack(pixel_values).to(device)
             question = []
+            caption_prompt = []
             for q in questions:
                 question.append('Based on the image, respond to this question with a short answer: '+q+'. Answer:')
+                caption_prompt.append("Caption this image.")
 
-            inputs = self.processor(
-                images=batch_images_preprocessed, 
-                text=question, 
-                padding='longest',
-                max_length=self.config.data_loader.additional.max_decoder_source_length,
-                truncation=True,
-                return_tensors="pt").to(device, torch.float32)
+            if self.config.no_instruction_vision:
+                print("Usao:")
+                inputs = self.processor( 
+                    text=question, 
+                    padding='longest',
+                    max_length=self.config.data_loader.additional.max_decoder_source_length,
+                    truncation=True,
+                    return_tensors="pt").to(device, torch.float32)
 
-            generator_outputs = self.generator.generate(**inputs)
+                qformer_inputs = self.processor(
+                    images=batch_images_preprocessed, 
+                    text=caption_prompt, 
+                    padding='longest',
+                    max_length=self.config.data_loader.additional.max_decoder_source_length,
+                    truncation=True,
+                    return_tensors="pt").to(device, torch.float32)
+
+                # print("q-inputid", qformer_inputs.qformer_input_ids.shape)
+                # print("q-atn", qformer_inputs.qformer_attention_mask.shape)
+                generator_outputs = self.generator.generate(
+                    pixel_values=qformer_inputs.pixel_values,
+                    qformer_input_ids=qformer_inputs.qformer_input_ids,
+                    qformer_attention_mask=qformer_inputs.qformer_attention_mask,
+                    input_ids=inputs.input_ids,
+                    attention_mask=inputs.attention_mask)
+            else:
+                inputs = self.processor(
+                    images=batch_images_preprocessed, 
+                    text=question, 
+                    padding='longest',
+                    max_length=self.config.data_loader.additional.max_decoder_source_length,
+                    truncation=True,
+                    return_tensors="pt").to(device, torch.float32)
+
+                generator_outputs = self.generator.generate(**inputs)
+
             generated_text = self.processor.batch_decode(generator_outputs, skip_special_tokens=True)
             
         return generated_text

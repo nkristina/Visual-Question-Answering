@@ -37,7 +37,7 @@ class DataLoaderWrapper():
         self.tokenizer.add_special_tokens(self.SPECIAL_TOKENS)
         
         # Load second tokenizer if specified
-        if self.config.model_config.DecoderTokenizerClass == "InstructBlipProcessor":
+        if self.config.model_config.get('DecoderTokenizerClass', None) is not None and self.config.model_config.DecoderTokenizerClass == "InstructBlipProcessor":
             DecoderTokenizerClass = globals()[self.config.model_config.DecoderTokenizerClass]
             self.decoder_tokenizer = DecoderTokenizerClass.from_pretrained(self.config.model_config.DecoderTokenizerModelVersion)
         elif self.config.model_config.get('DecoderTokenizerClass', None) is not None:

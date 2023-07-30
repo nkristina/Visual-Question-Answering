@@ -67,7 +67,7 @@ local override = {
     "SPECIAL_TOKENS":{  // for query encoder
       // "bos_token": "<PAD>",
       // "pad_token": "<PAD>",
-      "additional_special_tokens": [],
+      "additional_special_tokens": ["<BOV>", "<SOV>", "<EOV>", "<BOQ>", "<EOQ>", "<BOC>", "<EOC>", "<BOK>", "<EOK>"],
     },
     "DECODER_SPECIAL_TOKENS":{ // for answer generator
       "bos_token": "<PAD>",
