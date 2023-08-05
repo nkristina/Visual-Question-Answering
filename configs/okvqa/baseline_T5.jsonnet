@@ -45,6 +45,7 @@ local override = {
       "prefix_length": 10,
       "prefix_size": 768,  # dimensions of clip embedding
       "include_image_embeddings": 1,
+      "include_ROI_image_embeddings": 1,
     },
     "input_modules": {
       "module_list":[
@@ -56,9 +57,11 @@ local override = {
         //           "object_max": 40, "attribute_max": 3, "attribute_thres":0.05, "ocr": 1,
         //           "separation_tokens": {'start': '<BOV>', 'sep': '<SOV>', 'end': '<EOV>'}},
         {"type": "EmbeddingInput",  "option": "default"},
+        {"type": "ROIEmbeddingInput",  "option": "default"},
       ],
       "postprocess_module_list": [
         {"type": "PostProcessClipEmbeddings", "option": "default"},
+        {"type": "PostProcessROIEmbeddings", "option": "default"},
         {"type": "PostProcessInputTokenization", "option": "default"},
       ],
     },
@@ -82,6 +85,7 @@ local override = {
       "train_data_preprocessed": 0,
       "test_data_preprocessed": 0,
       "clip_embeddings": 0,
+      "ROI_embeddings": 1,
     },
   },
   "data_loader": {
@@ -100,6 +104,7 @@ local override = {
         "LoadOscarCaptionFeatures",
         "LoadOKVQAData",
         "LoadClipEmbeddings",
+        "LoadROIEmbeddings",
       ],
       "module_dict":{
       },
@@ -112,6 +117,7 @@ local override = {
     "epochs":train_epochs,
     "batch_size":train_batch_size,
     "lr": lr,
+    "mlp_lr": mlp_lr,
     "retriever_lr": retriever_lr,
     "adam_epsilon": adam_epsilon,
     "load_epoch": -1,

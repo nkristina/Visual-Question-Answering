@@ -66,6 +66,10 @@ local clip_embeddings = {
    "train": "../data/ok-vqa/pre-extracted_features/image_embeddings/coco_ViT-L_14@336px_train2014.pkl",
    "val": "../data/ok-vqa/pre-extracted_features/image_embeddings/coco_ViT-L_14@336px_val2014.pkl",
  };
+ local ROI_embeddings = {
+   "train": "../data/ok-vqa/pre-extracted_features/ROI/ROI4_train2014_extracted_with_vinvl_large.pkl",
+   "val": "../data/ok-vqa/pre-extracted_features/ROI/ROI4_val2014_extracted_with_vinvl_large.pkl",
+ };
 
 {
   "DATA_FOLDER": "",
@@ -140,6 +144,10 @@ local clip_embeddings = {
         "LoadClipEmbeddings": {
           "type": "LoadClipEmbeddings", "option": "default",
           "config": clip_embeddings,
+        },
+        "LoadROIEmbeddings": {
+          "type": "LoadROIEmbeddings", "option": "default",
+          "config": ROI_embeddings,
         },
         "LoadGoogleSearchPassageData": {
           "type": "LoadGoogleSearchPassageData", "option": "default",

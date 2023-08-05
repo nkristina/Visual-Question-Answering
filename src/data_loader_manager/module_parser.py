@@ -132,6 +132,19 @@ class ModuleParser():
         # print("clip_embeddings shape after first stack:", return_dict['clip_embeddings'].shape)
         return return_dict
 
+    def ROIEmbeddingInput(self, sample: EasyDict, module: EasyDict) -> Optional[EasyDict]:
+        """
+        Default ImageInput module parser
+        pass on image in form expected by collate function.
+        """
+        return_dict = EasyDict(
+                ROI_embeddings=torch.stack([torch.tensor(ROI_embedding) for ROI_embedding in sample.ROI_embeddings]),
+            )
+
+        # print("_______Q0.3:________:")
+        # print("clip_embeddings shape after first stack:", return_dict['clip_embeddings'].shape)
+        return return_dict
+
     def parse_modules(self,
                     sample: EasyDict, 
                     modules: EasyDict, 
@@ -334,6 +347,28 @@ class ModuleParser():
         # clip_embeddings shape after stack: torch.Size([4, 1, 768])
 
         data_to_process.update(**post_processed_clip_embeddings)
+        return data_to_process
+
+    def PostProcessROIEmbeddings(self, data_to_process: EasyDict) -> EasyDict:
+        """
+        Apply the transformations to the images expected by the downstream model
+        """
+        assert "ROI_embeddings" in data_to_process.keys()
+        ROI_embeddings = data_to_process.pop("ROI_embeddings")
+        post_processed_ROI_embeddings = EasyDict(
+            ROI_embeddings=torch.stack(ROI_embeddings),
+        )
+
+        # print("_______Q0.3:________:")
+        # print("ROI_embeddings shape after stack:", 
+        # post_processed_ROI_embeddings.ROI_embeddings.shape)
+
+        # _______Q0.3:________:
+        # clip_embeddings shape after first stack: torch.Size([1, 768])
+        # _______Q0.3:________:
+        # clip_embeddings shape after stack: torch.Size([4, 1, 768])
+
+        data_to_process.update(**post_processed_ROI_embeddings)
         return data_to_process
     
 

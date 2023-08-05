@@ -401,6 +401,45 @@ class DataLoaderOKVQA(DataLoaderWrapper):
             )
         )
 
+    def LoadROIEmbeddings(self, module_config):
+        """
+        Load ROI embeddings
+        {
+          "type": "LoadROIEmbeddings", "option": "default",
+          "config": {
+                "train": "..",
+                "val": "..",
+            },
+        },
+        """
+        #############################
+        #   Read ROI Embeddings
+        #############################
+        print("Ucitao sam ROI embedinge! #")
+        self.data.ROI_embeddings = load_cached_data(
+            self.config, "ROI_embeddings"
+        )
+
+        if not self.data.ROI_embeddings:
+            self.data.ROI_embeddings = EasyDict()
+            for data_split in ["train", "val"]:
+                # Read pre-extracted features
+                ROI_embeddings_file = module_config.config[data_split]
+                logger.info(f"Reading: {ROI_embeddings_file}")
+                with open(ROI_embeddings_file, "rb") as f:
+                    self.data.ROI_embeddings.update(EasyDict(pickle.load(f)))
+
+            save_cached_data(
+                self.config, self.data.ROI_embeddings, "ROI_embeddings"
+            )
+
+        logger.info(
+            "[Data Statistics] ROI embeddings {}".format(
+                len(self.data.ROI_embeddings)
+            )
+        )
+
+
     def set_dataloader(self):
         """
         This function wraps datasets into dataloader for trainers
@@ -410,6 +449,7 @@ class DataLoaderOKVQA(DataLoaderWrapper):
             'vinvl_features': self.data.vinvl_features,
             'ocr_features': self.data.ocr_features,
             'clip_embeddings': self.data.clip_embeddings,
+            'ROI_embeddings': self.data.ROI_embeddings,
             'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
             'tokenizer': self.tokenizer,
             'decoder_tokenizer': self.decoder_tokenizer,
@@ -439,6 +479,7 @@ class DataLoaderOKVQA(DataLoaderWrapper):
             'vinvl_features': self.data.vinvl_features,
             'ocr_features': self.data.ocr_features,
             'clip_embeddings': self.data.clip_embeddings,
+            'ROI_embeddings': self.data.ROI_embeddings,
             'answer_candidate_list': self.data.vqa_data.answer_candidate_list,
             'tokenizer': self.tokenizer,
             'decoder_tokenizer': self.decoder_tokenizer,

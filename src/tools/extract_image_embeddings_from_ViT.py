@@ -61,6 +61,7 @@ def main(clip_model_name: str, subtype: str = "val2014"):
         with torch.no_grad():
             prefix = model.encode_image(image).cpu().numpy().astype(np.float32)
 
+        # samo treba da appendujem vise njih na isti img_id
         img_ids_with_embeddings[img_id] = prefix
 
         if (i + 1) % 10000 == 0:
