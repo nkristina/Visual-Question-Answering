@@ -20,6 +20,8 @@ from transformers import DPRQuestionEncoder, DPRContextEncoder, DPRConfig
 from transformers import BertModel, BertConfig
 from transformers.models.rag.retrieval_rag import CustomHFIndex, CanonicalHFIndex
 import pytorch_lightning as pl
+from pathlib import Path
+
 # from datasets import load_from_disk
 from peft import LoraConfig, get_peft_model, TaskType, PeftModelForSeq2SeqLM
 
@@ -85,6 +87,8 @@ class RagModelNoDPRLora(pl.LightningModule):
 
         self.lm_embedding_size = self.generator.model_dim # dimesnion of hidden state of lm model !
         self.use_img_embd = False
+        self.use_ROI_embd = config.model_config.mlp.include_ROI_image_embeddings == 1
+
 
         if config.model_config.mlp.include_image_embeddings == 1:
             self.use_img_embd = True
@@ -106,12 +110,26 @@ class RagModelNoDPRLora(pl.LightningModule):
                     print("No checkpoint exists from '{}'. Skipping...".format(checkpoint_path))
                 else:
                     print("Loading checkpoint from '{}'".format(checkpoint_path))
-                    checkpoint = torch.load(checkpoint_path)
-                    print(checkpoint.keys())
-                    self.vct0 = VCT0Prefix(prefix_length = self.prefix_length, model_version = self.config.model_config.ModelVersion)
-                    self.vct0.load_state_dict(checkpoint["state_dict"], strict=False)
-                    self.clip_project.load_state_dict(self.vct0.clip_project.state_dict())
-                    print("Loaded?")
+                    print('Weights before loading')
+                    for n, p in self.clip_project.named_parameters():
+                        print(n,p)
+                    # checkpoint = torch.load(checkpoint_path)
+                    # print(checkpoint.keys())
+                    # self.vct0 = VCT0Prefix(prefix_length = self.prefix_length, model_version = self.config.model_config.ModelVersion)
+                    # self.vct0.load_state_dict(checkpoint["state_dict"], strict=False)
+                    # self.clip_project.load_state_dict(self.vct0.clip_project.state_dict())
+                    # print("Loaded?")
+                    checkpoint_path = Path(config.model_config.mlp.checkpoint_path)
+                    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+                    with torch.no_grad():
+                        self.clip_project.model[0].weight.copy_(checkpoint['state_dict']["model.clip_project.model.0.weight"])
+                        self.clip_project.model[0].bias.copy_(checkpoint['state_dict']["model.clip_project.model.0.bias"])
+                        self.clip_project.model[2].weight.copy_(checkpoint['state_dict']["model.clip_project.model.2.weight"])
+                        self.clip_project.model[2].bias.copy_(checkpoint['state_dict']["model.clip_project.model.2.bias"])
+                    print('Weights after loading')
+                    for n, p in self.clip_project.named_parameters():
+                        print(n,p)
+                    print('Loadeed??')
 
     def prepare_inputs_for_generator(self, 
                 input_text_sequences, retrieved_docs, labels, n_docs=None):
@@ -198,6 +216,7 @@ class RagModelNoDPRLora(pl.LightningModule):
                       attention_mask: torch.Tensor,
                       labels: torch.Tensor,
                       prefix: torch.Tensor,
+                      ROIprefix: torch.Tensor,
                     **kwargs):
         
         batch_size = input_ids.shape[0]
@@ -240,9 +259,34 @@ class RagModelNoDPRLora(pl.LightningModule):
         # print("GENERATOR INPUT: ", generator_inputs)
 
         if self.use_img_embd:
-            prefix_projections = self.clip_project(prefix).view(
-                -1, self.prefix_length, self.lm_embedding_size
-            )
+            if not self.use_ROI_embd:
+                prefix_projections = self.clip_project(prefix).view(
+                    -1, self.prefix_length, self.lm_embedding_size
+                )
+            else:
+                # print("ROIprefix shape before: ", ROIprefix.shape)
+                batch_size_, ROI_number_, _, input_dim_ = ROIprefix.shape
+                # print("PRE: ", ROIprefix[0:2])
+
+                ROIprefix = ROIprefix.reshape(batch_size_ * ROI_number_, 1, input_dim_)
+                # print("ROIprefix shape after: ", ROIprefix.shape)
+
+                # print("POSLE: ", ROIprefix[0:2])
+
+                prefix_projections = self.clip_project(ROIprefix).view(
+                    -1, self.prefix_length, self.lm_embedding_size
+                )
+
+                # print("PROSAO")
+                # print(prefix_projections.shape)
+                # print("Pre: ", prefix_projections[0:6])
+                # prefix_projections = prefix_projections.reshape(batch_size_, ROI_number_, self.prefix_length, self.lm_embedding_size)
+                # prefix_projections = prefix_projections.transpose(1, 2).contiguous().view(batch_size, -1, self.lm_embedding_size)
+                prefix_projections = prefix_projections.view(batch_size, -1, self.lm_embedding_size)
+                # print("OPTION 2")
+                # print(prefix_projections.shape)
+                # print("Posle: ", prefix_projections[0:6])
+
 
             joint_embeddings, joint_attention_masks = self.insert_prefix_into_inputs(
                                                     batch_size=batch_size, 
@@ -269,6 +313,7 @@ class RagModelNoDPRLora(pl.LightningModule):
     def generate(self, input_ids: torch.Tensor,
                       attention_mask: torch.Tensor,
                       prefix: torch.Tensor,
+                      ROIprefix: torch.Tensor,
                       **kwargs):
 
         batch_size = input_ids.shape[0]
@@ -293,9 +338,33 @@ class RagModelNoDPRLora(pl.LightningModule):
         #                                     n_docs=n_docs)
         
         if self.use_img_embd:
-            prefix_projections = self.clip_project(prefix).view(
-                -1, self.prefix_length, self.lm_embedding_size
-            )
+            if not self.use_ROI_embd:
+                prefix_projections = self.clip_project(prefix).view(
+                    -1, self.prefix_length, self.lm_embedding_size
+                )
+            else:
+                # print("ROIprefix shape before: ", ROIprefix.shape)
+                batch_size_, ROI_number_, _, input_dim_ = ROIprefix.shape
+                # print("PRE: ", ROIprefix[0:2])
+
+                ROIprefix = ROIprefix.reshape(batch_size_ * ROI_number_, 1, input_dim_)
+                # print("ROIprefix shape after: ", ROIprefix.shape)
+
+                # print("POSLE: ", ROIprefix[0:2])
+
+                prefix_projections = self.clip_project(ROIprefix).view(
+                    -1, self.prefix_length, self.lm_embedding_size
+                )
+
+                # print("PROSAO")
+                # print(prefix_projections.shape)
+                # print("Pre: ", prefix_projections[0:6])
+                # prefix_projections = prefix_projections.reshape(batch_size_, ROI_number_, self.prefix_length, self.lm_embedding_size)
+                # prefix_projections = prefix_projections.transpose(1, 2).contiguous().view(batch_size, -1, self.lm_embedding_size)
+                prefix_projections = prefix_projections.view(batch_size, -1, self.lm_embedding_size)
+                # print("OPTION 2")
+                # print(prefix_projections.shape)
+                # print("Posle: ", prefix_projections[0:6])            
             # print("Input text", generator_inputs.generator_input_text_sequences[0])
             joint_embeddings, joint_attention_masks = self.insert_prefix_into_inputs(
                                                     batch_size=batch_size, 
