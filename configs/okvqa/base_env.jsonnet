@@ -69,8 +69,10 @@ local clip_embeddings = {
  local ROI_embeddings = {
   //  "train": "../data/ok-vqa/pre-extracted_features/ROI/ROI4_train2014_extracted_with_vinvl_large.pkl",
   //  "val": "../data/ok-vqa/pre-extracted_features/ROI/ROI4_val2014_extracted_with_vinvl_large.pkl",
-   "train": "../data/ok-vqa/pre-extracted_features/ROI/slide_ROI4_train2014.pkl",
-   "val": "../data/ok-vqa/pre-extracted_features/ROI/slide_ROI4_val2014.pkl",
+  //  "train": "../data/ok-vqa/pre-extracted_features/ROI/slide_ROI4_train2014.pkl",
+  //  "val": "../data/ok-vqa/pre-extracted_features/ROI/slide_ROI4_val2014.pkl",
+   "train": "../data/ok-vqa/pre-extracted_features/ROI/dROI8_train2014_extracted_with_vinvl_large.pkl",
+   "val": "../data/ok-vqa/pre-extracted_features/ROI/dROI8_val2014_extracted_with_vinvl_large.pkl",
  };
 
 {
