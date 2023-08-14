@@ -33,15 +33,15 @@ def main():
 
     data_dir = Path("../data")
     okvqa_data_dir = data_dir / "ok-vqa"
-    num_ROI = 2
+    num_ROI = 6
     device = "cuda" if torch.cuda.is_available() else "cpu"
     clip_model_name = "ViT-L/14@336px"
-    out_embd_path = "/rds/user/kn413/hpc-work/Visual-Question-Answering/data/ok-vqa/pre-extracted_features/ROI/ROI2_val2014_extracted_with_vinvl_large.pkl"
+    out_embd_path = "/rds/user/kn413/hpc-work/Visual-Question-Answering/data/ok-vqa/pre-extracted_features/ROI/ROI6_train2014_extracted_with_vinvl_large.pkl"
     out_img_path = "/rds/user/kn413/hpc-work/Visual-Question-Answering/src/tools/Testing/ROI_images"
 
-    # vinvl_features_path = "/rds/user/kn413/hpc-work/Visual-Question-Answering/data/ok-vqa/pre-extracted_features/vinvl_output/vinvl_okvqa_trainset_full/inference/vinvl_vg_x152c4/predictions.tsv"
-    vinvl_features_path = "/rds/user/kn413/hpc-work/Visual-Question-Answering/data/ok-vqa/pre-extracted_features/vinvl_output/vinvl_okvqa_testset_full/inference/vinvl_vg_x152c4/predictions.tsv"
-    subtype = "val2014"
+    vinvl_features_path = "/rds/user/kn413/hpc-work/Visual-Question-Answering/data/ok-vqa/pre-extracted_features/vinvl_output/vinvl_okvqa_trainset_full/inference/vinvl_vg_x152c4/predictions.tsv"
+    # vinvl_features_path = "/rds/user/kn413/hpc-work/Visual-Question-Answering/data/ok-vqa/pre-extracted_features/vinvl_output/vinvl_okvqa_testset_full/inference/vinvl_vg_x152c4/predictions.tsv"
+    subtype = "train2014"
 
     with open(
         okvqa_data_dir / f"OpenEnded_mscoco_{subtype}_questions.json", "r"

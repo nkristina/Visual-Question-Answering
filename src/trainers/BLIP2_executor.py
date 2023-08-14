@@ -31,7 +31,7 @@ from pytorch_lightning import Trainer, seed_everything
 from .metrics_processors import MetricsProcessor
 from .base_executor import BaseExecutor
 from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config
-from models.rag.instruct_model_prefix import PrefixModelBLIP2
+from models.rag.instruct_model_prefix import PrefixModelBLIP2, PrefixModelBLIP2ROI
 from utils.dirs import *
 
 

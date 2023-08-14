@@ -161,7 +161,7 @@ class OKVQADatasetBLIP2Text(torch.utils.data.Dataset, ModuleParser):
         batched_data = EasyDict({
             'question_ids': question_ids,
             'questions': questions,
-            # 'text_based_vision': text_based_vision_test,
+            'text_based_vision': input_data.text_sequence,
             'answers': answers,
             'gold_answers': gold_answers,
             'pixel_values': pixel_values,

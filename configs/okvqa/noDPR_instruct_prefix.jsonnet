@@ -27,12 +27,14 @@ local override = {
   "seed": seed,
   "model_config": {
     "base_model": "T5",
-    "ModelClass": "PrefixModelBLIP2",
+    "ModelClass": "PrefixModelBLIP2ROI",
     "TokenizerClass": "T5Tokenizer",
     "TokenizerModelVersion": "t5-large",
     "GeneratorModelClass": "Blip2Processor",
     "ConfigClass": "T5Config",
     "ModelVersion": "Salesforce/blip2-flan-t5-xl",
+    "DecoderTokenizerClass": "InstructBlipProcessor",  // generator tokenizer
+    "DecoderTokenizerModelVersion": "Salesforce/instructblip-flan-t5-xl", // generator tokenizer version
     "pretrained": 1,
     "UseBLIP2": 1,
     "UseInstructBLIP": 0,
@@ -77,10 +79,18 @@ local override = {
       "clip_embeddings": 0,
       "qformer_embeddings": 0,
       "instructBLIP_embeddings": 0,
+      "test_data_preprocessed_ROI4": 0,
+      "train_data_preprocessed_ROI4": 0,
+      "test_data_preprocessed_ROI2": 0,
+      "train_data_preprocessed_ROI2": 0,
+      "test_data_preprocessed_ROI1": 0,
+      "train_data_preprocessed_ROI1": 0,
+      "test_data_preprocessed_ROI2_half": 1,
+      "train_data_preprocessed_ROI2_half": 1,
     },
   },
   "data_loader": {
-    "type": "DataLoaderBLIP2",
+    "type": "DataLoaderBLIP2_ROI",
     "dataset_type": "OKVQADatasetBLIP2",
     "dummy_dataloader": 0,
     "additional":{

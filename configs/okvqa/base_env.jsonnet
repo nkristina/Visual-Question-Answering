@@ -39,6 +39,16 @@ local img_data = {
   "train": "../data/ok-vqa/train2014",
   "test": "../data/ok-vqa/val2014",
 };
+local ROI_img_data = {
+  // "train": "../data/ok-vqa/4ROI_train2014",
+  // "test": "../data/ok-vqa/4ROI_val2014",
+  "train": "../data/ok-vqa/2ROI_train2014",
+  "test": "../data/ok-vqa/2ROI_val2014",
+  // "train": "../data/ok-vqa/1ROI_train2014",
+  // "test": "../data/ok-vqa/1ROI_val2014",
+  // "train": "../data/ok-vqa/2ROI_half_train2014",
+  // "test": "../data/ok-vqa/2ROI_half_val2014",
+};
 local ocr_features = {
   "train": "../data/ok-vqa/pre-extracted_features/OCR/train",
   "test": "../data/ok-vqa/pre-extracted_features/OCR/valid",
@@ -73,8 +83,10 @@ local clip_embeddings = {
   //  "val": "../data/ok-vqa/pre-extracted_features/ROI/slide_ROI4_val2014.pkl",
   //  "train": "../data/ok-vqa/pre-extracted_features/ROI/dROI8_train2014_extracted_with_vinvl_large.pkl",
   //  "val": "../data/ok-vqa/pre-extracted_features/ROI/dROI8_val2014_extracted_with_vinvl_large.pkl",
-  "train": "../data/ok-vqa/pre-extracted_features/ROI/ROI2_train2014_extracted_with_vinvl_large.pkl",
-  "val": "../data/ok-vqa/pre-extracted_features/ROI/ROI2_val2014_extracted_with_vinvl_large.pkl",
+  // "train": "../data/ok-vqa/pre-extracted_features/ROI/ROI2_train2014_extracted_with_vinvl_large.pkl",
+  // "val": "../data/ok-vqa/pre-extracted_features/ROI/ROI2_val2014_extracted_with_vinvl_large.pkl",
+  "train": "../data/ok-vqa/pre-extracted_features/ROI/ROI6_train2014_extracted_with_vinvl_large.pkl",
+  "val": "../data/ok-vqa/pre-extracted_features/ROI/ROI6_val2014_extracted_with_vinvl_large.pkl",
  };
 
 {
@@ -145,6 +157,7 @@ local clip_embeddings = {
           "config": {
             "vqa_data_path": vqa_data,
             "image_data_path": img_data,
+            "ROI_data_path": ROI_img_data,
           },
         },
         "LoadClipEmbeddings": {

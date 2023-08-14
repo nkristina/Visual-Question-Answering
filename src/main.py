@@ -115,7 +115,7 @@ def main(config):
         'plugins': plugins,
         'log_every_n_steps': 10,
         'accelerator': config.args.accelerator,
-        # 'val_check_interval': config.valid.step_size,
+        'val_check_interval': config.valid.step_size,
         # 'accelerator': "cpu", 
         # 'strategy': "ddp",
         # 'devices': 2,
