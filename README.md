@@ -4,9 +4,9 @@ This repo contains the codebase for the MPhil in Machine Learning and Machine In
 
 The code added on top of the RA-VQA baseline can be found in the following branches:
 
-- Vision encoder integration: MappingNetwork branch
-- InstructBLIP Q-former integration: InstrcutBLIP branch
-- Regions of Interest detection: ROI branch
+- Vision encoder integration: ```MappingNetwork``` branch
+- InstructBLIP Q-former integration: ```InstrcutBLIP``` branch
+- Regions of Interest detection: ```ROI``` branch
 
 # Retrieval Augmented Visual Question Answering
 This is the official repository of the Retrieval Augmented Visual Question Answering (RAVQA) project.
