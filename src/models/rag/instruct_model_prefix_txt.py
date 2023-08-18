@@ -309,6 +309,7 @@ class PrefixModelBLIP2TextROI(pl.LightningModule):
         #     truncation=True,
         #     return_tensors="pt").to(device, torch.float32)
                     
+        print("TEXT:", text_based_vision)
         inputs = self.generator_tokenizer(
             text=text_based_vision, 
             padding='longest',

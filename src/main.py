@@ -103,6 +103,17 @@ def main(config):
     plugin_names = config.train.additional.plugins
     plugins = [globals()[plugin_name]() for plugin_name in plugin_names]
 
+    # class SkipFirstEpochValidation(pl.Callback):
+    #     def on_train_epoch_start(self, trainer, pl_module):
+    #         if trainer.current_epoch == 1:  # this means it's starting the second epoch
+    #             trainer.val_dataloaders = trainer._original_val_dataloaders  # restore original val dataloader
+
+    #     def on_train_start(self, trainer, pl_module):
+    #         # backup original validation dataloaders
+    #         trainer._original_val_dataloaders = trainer.val_dataloaders
+    #         if trainer.current_epoch == 0:
+    #             trainer.val_dataloaders = None  # this will effectively skip the validation for the first epoch
+
     additional_args = {
         'accumulate_grad_batches': config.train.additional.gradient_accumulation_steps,
         "default_root_dir": config.saved_model_path,
